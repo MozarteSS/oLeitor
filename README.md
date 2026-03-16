@@ -49,6 +49,14 @@ pip install -r requirements.txt
 Double-click `open_oLeitor.bat`.  
 It starts the server and opens `http://localhost:5000` in your default browser automatically.
 
+
+### Linux
+
+Execution permission: `chmod +x open_oLeitor.sh`
+Double-click `open_oLeitor.sh`.  
+It starts the server and opens `http://localhost:5000` in your default browser automatically.
+
+
 ### Any OS
 
 ```bash
