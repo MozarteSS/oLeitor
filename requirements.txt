@@ -1,0 +1,6 @@
+flask>=3.0
+requests>=2.31
+trafilatura>=1.8
+newspaper3k>=0.2.8
+beautifulsoup4>=4.12
+lxml>=5.0
