@@ -3,7 +3,7 @@
 A minimal, newspaper-style web reader that bypasses paywalls and extracts clean article text from any URL.  
 Paste a link → get the full article, ad-free, ready to read or save as PDF.
 
-![oLeitor screenshot](https://user-images.githubusercontent.com/placeholder/screenshot.png)
+![oLeitor screenshot](cover_fig.jpeg)
 
 ## How it works
 
