@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>News Reader</title>
+  <title>oLeitor</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Source+Serif+4:opsz,wght@8..60,300;8..60,400&display=swap" rel="stylesheet" />
   <style>
@@ -18,6 +18,7 @@
       --rule: #c8c0b0;
       --accent: #8b1a1a;
       --accent-soft: #c44;
+      --font-size: 16.5px;
     }
 
     html { font-size: 16px; }
@@ -87,6 +88,7 @@
     .search-wrap {
       padding: 2rem 0 1.5rem;
       border-bottom: 1px solid var(--rule);
+      position: relative;
     }
     .search-label {
       font-family: 'Source Serif 4', serif;
@@ -101,6 +103,7 @@
       display: flex;
       gap: 0;
       border: 1.5px solid var(--ink);
+      position: relative;
     }
     .search-row input {
       flex: 1;
@@ -112,6 +115,7 @@
       font-size: 14px;
       font-weight: 300;
       outline: none;
+      min-width: 0;
     }
     .search-row input::placeholder { color: var(--ink-muted); }
     .search-row button {
@@ -129,6 +133,62 @@
     }
     .search-row button:hover { background: var(--accent); }
     .search-row button:disabled { background: var(--ink-muted); cursor: not-allowed; }
+
+    /* ── history dropdown ── */
+    #history-dropdown {
+      display: none;
+      position: absolute;
+      top: 100%;
+      left: 0;
+      right: 0;
+      background: white;
+      border: 1.5px solid var(--ink);
+      border-top: none;
+      z-index: 100;
+      max-height: 220px;
+      overflow-y: auto;
+    }
+    #history-dropdown.open { display: block; }
+    .history-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: .55rem 1rem;
+      cursor: pointer;
+      border-bottom: 1px solid var(--rule);
+      gap: 8px;
+    }
+    .history-item:last-child { border-bottom: none; }
+    .history-item:hover { background: var(--paper-warm); }
+    .history-item span {
+      font-size: 13px;
+      color: var(--ink-soft);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      flex: 1;
+    }
+    .history-item button {
+      background: none;
+      border: none;
+      color: var(--ink-muted);
+      font-size: 14px;
+      cursor: pointer;
+      padding: 0 4px;
+      line-height: 1;
+    }
+    .history-item button:hover { color: var(--accent); background: none; }
+    .history-clear {
+      padding: .45rem 1rem;
+      font-size: 11px;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      color: var(--ink-muted);
+      cursor: pointer;
+      text-align: right;
+      border-top: 1px solid var(--rule);
+    }
+    .history-clear:hover { color: var(--accent); background: var(--paper-warm); }
 
     /* ── status ── */
     .status-bar {
@@ -157,17 +217,45 @@
     .dot-loader span:nth-child(3) { animation-delay: .4s; }
     @keyframes bounce { 0%,80%,100%{transform:scale(.6);opacity:.4} 40%{transform:scale(1);opacity:1} }
 
+    /* ── skeleton ── */
+    #skeleton {
+      display: none;
+      padding: 2rem 0;
+      animation: fadeIn .3s ease;
+    }
+    .sk {
+      background: linear-gradient(90deg, var(--paper-warm) 25%, var(--rule) 50%, var(--paper-warm) 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.4s infinite;
+      border-radius: 3px;
+      margin-bottom: 1rem;
+    }
+    @keyframes shimmer { from{background-position:200% 0} to{background-position:-200% 0} }
+    .sk-title { height: 36px; width: 85%; }
+    .sk-title-2 { height: 28px; width: 60%; margin-bottom: 1.5rem; }
+    .sk-img { height: 220px; width: 100%; margin-bottom: 1.5rem; }
+    .sk-line { height: 14px; width: 100%; }
+    .sk-line.short { width: 72%; }
+    .sk-line.med { width: 88%; }
+
     /* ── article ── */
     #article { display: none; animation: fadeIn .4s ease; }
     @keyframes fadeIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:none} }
 
     .article-header { padding: 2rem 0 1.5rem; border-bottom: 1px solid var(--rule); }
+    .article-meta {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: .8rem;
+    }
     .article-method {
       font-size: 10px;
       letter-spacing: .2em;
       text-transform: uppercase;
       color: var(--accent);
-      margin-bottom: .8rem;
       display: flex;
       align-items: center;
       gap: 8px;
@@ -179,6 +267,50 @@
       height: 1px;
       background: var(--accent);
     }
+
+    /* ── reader controls ── */
+    .reader-controls {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .font-control {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .font-control label {
+      font-size: 10px;
+      letter-spacing: .15em;
+      text-transform: uppercase;
+      color: var(--ink-muted);
+    }
+    .font-control input[type=range] {
+      width: 80px;
+      accent-color: var(--ink);
+      cursor: pointer;
+    }
+    .font-size-val {
+      font-size: 11px;
+      color: var(--ink-muted);
+      min-width: 24px;
+    }
+    .btn-icon {
+      padding: .45rem .8rem;
+      background: transparent;
+      color: var(--ink-soft);
+      border: 1px solid var(--rule);
+      font-family: 'Source Serif 4', serif;
+      font-size: 12px;
+      letter-spacing: .05em;
+      cursor: pointer;
+      transition: background .15s, color .15s, border-color .15s;
+      white-space: nowrap;
+    }
+    .btn-icon:hover { background: var(--paper-warm); border-color: var(--ink-soft); color: var(--ink); }
+    .btn-icon.copied { color: #386; border-color: #386; }
+
     .article-title {
       font-family: 'Playfair Display', Georgia, serif;
       font-size: clamp(1.6rem, 4vw, 2.5rem);
@@ -198,10 +330,11 @@
 
     .article-body {
       padding: 1.5rem 0 3rem;
-      font-size: 16.5px;
       line-height: 1.9;
       color: var(--ink-soft);
       columns: 1;
+      font-size: var(--font-size);
+      transition: font-size .2s;
     }
     .article-body p { margin-bottom: 1.2em; }
     .article-body p:first-child::first-letter {
@@ -227,7 +360,7 @@
     }
     .error-box strong { color: var(--accent); display: block; margin-bottom: .3rem; font-family: 'Playfair Display', serif; }
 
-    /* ── pdf button ── */
+    /* ── pdf + copy buttons ── */
     .btn-pdf {
       padding: .75rem 1.25rem;
       background: transparent;
@@ -247,7 +380,8 @@
 
     /* ── print / PDF ── */
     @media print {
-      .masthead, .search-wrap, .status-bar, .error-box, .footer, .article-method { display: none !important; }
+      .masthead, .search-wrap, .status-bar, .error-box, .footer,
+      .article-method, .reader-controls, .article-meta { display: none !important; }
       body { background: white; color: #111; font-size: 13pt; }
       .article-title { font-size: 22pt; margin-bottom: 1rem; }
       .article-body { font-size: 12pt; line-height: 1.8; }
@@ -255,7 +389,7 @@
       .container { max-width: 100%; padding: 0; }
     }
 
-        /* ── footer ── */
+    /* ── footer ── */
     .footer {
       border-top: 3px double var(--ink);
       padding: 1.5rem 0;
@@ -264,6 +398,22 @@
       letter-spacing: .15em;
       color: var(--ink-muted);
       text-transform: uppercase;
+    }
+
+    /* ── dark mode ── */
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --ink: #e8e6e3;
+        --ink-soft: #a8a39d;
+        --ink-muted: #706b65;
+        --paper: #1a1a1a;
+        --paper-warm: #242424;
+        --rule: #404040;
+        --accent: #d94a4a;
+      }
+      .search-row input { background: #2a2a2a; color: var(--ink); }
+      #history-dropdown { background: #242424; }
+      .error-box { background: #242424; }
     }
   </style>
 </head>
@@ -281,11 +431,20 @@
 
     <div class="search-wrap">
       <label class="search-label" for="url-input">Article URL</label>
-      <div class="search-row">
-        <input id="url-input" type="text" placeholder="https://www.example.com/article…" autocomplete="off" />
+      <div class="search-row" id="search-row">
+        <input
+          id="url-input"
+          type="text"
+          placeholder="https://www.example.com/article…"
+          autocomplete="off"
+          autocorrect="off"
+          autocapitalize="none"
+          spellcheck="false"
+        />
         <button id="btn" onclick="readArticle()">Read now</button>
-        <button class="btn-pdf" id="btn-pdf" onclick="downloadPDF()">Download PDF</button>
+        <button class="btn-pdf" id="btn-pdf" onclick="downloadPDF()">↓ PDF</button>
       </div>
+      <div id="history-dropdown"></div>
     </div>
 
     <div class="status-bar">
@@ -300,9 +459,31 @@
       <span id="error-msg"></span>
     </div>
 
+    <!-- Skeleton loader -->
+    <div id="skeleton">
+      <div class="sk sk-title"></div>
+      <div class="sk sk-title-2"></div>
+      <div class="sk sk-img"></div>
+      <div class="sk sk-line"></div>
+      <div class="sk sk-line med"></div>
+      <div class="sk sk-line short"></div>
+      <div class="sk sk-line"></div>
+      <div class="sk sk-line med"></div>
+    </div>
+
     <div id="article">
       <div class="article-header">
-        <div class="article-method" id="article-method"></div>
+        <div class="article-meta">
+          <div class="article-method" id="article-method"></div>
+          <div class="reader-controls">
+            <div class="font-control">
+              <label for="font-slider">A</label>
+              <input type="range" id="font-slider" min="13" max="24" value="16" oninput="setFontSize(this.value)" />
+              <span class="font-size-val" id="font-size-val">16</span>
+            </div>
+            <button class="btn-icon" id="btn-copy" onclick="copyText()">⎘ Copiar texto</button>
+          </div>
+        </div>
         <h1 class="article-title" id="article-title"></h1>
         <img id="article-image" class="article-image" src="" alt="" style="display:none" />
       </div>
@@ -318,24 +499,122 @@
   </div>
 
   <script>
-    // date in masthead
+    // ── date in masthead ──
     const now = new Date();
     document.getElementById('masthead-date').textContent =
-      now.toLocaleDateString('en-US', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
+      now.toLocaleDateString('pt-BR', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
 
-    // check server
+    // ── check server ──
     async function checkServer() {
       try {
-        await fetch('http://localhost:5000/ping');
+        await fetch('/ping');
         document.getElementById('server-status').textContent = 'online ✓';
         document.getElementById('server-status').style.color = '#386';
       } catch {
-        document.getElementById('server-status').textContent = 'offline — run: python server.py';
+        document.getElementById('server-status').textContent = 'offline — sem conexão com o servidor';
         document.getElementById('server-status').style.color = '#c44';
       }
     }
     checkServer();
 
+    // ── history (localStorage) ──
+    const HISTORY_KEY = 'oleitor_history';
+    const MAX_HISTORY = 10;
+
+    function loadHistory() {
+      try { return JSON.parse(localStorage.getItem(HISTORY_KEY)) || []; }
+      catch { return []; }
+    }
+
+    function saveToHistory(url) {
+      let h = loadHistory().filter(u => u !== url);
+      h.unshift(url);
+      if (h.length > MAX_HISTORY) h = h.slice(0, MAX_HISTORY);
+      localStorage.setItem(HISTORY_KEY, JSON.stringify(h));
+    }
+
+    function renderHistory(filter) {
+      const h = loadHistory().filter(u => !filter || u.includes(filter));
+      const dd = document.getElementById('history-dropdown');
+      if (!h.length) { dd.classList.remove('open'); return; }
+
+      let html = h.map(url => `
+        <div class="history-item" onclick="pickHistory('${escHtml(url)}')">
+          <span title="${escHtml(url)}">${escHtml(url)}</span>
+          <button onclick="removeHistory(event, '${escHtml(url)}')">✕</button>
+        </div>`).join('');
+      html += `<div class="history-clear" onclick="clearHistory()">Limpar histórico</div>`;
+      dd.innerHTML = html;
+      dd.classList.add('open');
+    }
+
+    function pickHistory(url) {
+      document.getElementById('url-input').value = url;
+      document.getElementById('history-dropdown').classList.remove('open');
+      readArticle();
+    }
+
+    function removeHistory(e, url) {
+      e.stopPropagation();
+      const h = loadHistory().filter(u => u !== url);
+      localStorage.setItem(HISTORY_KEY, JSON.stringify(h));
+      renderHistory(document.getElementById('url-input').value);
+    }
+
+    function clearHistory() {
+      localStorage.removeItem(HISTORY_KEY);
+      document.getElementById('history-dropdown').classList.remove('open');
+    }
+
+    function escHtml(s) {
+      return s.replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    }
+
+    // Close dropdown when clicking outside
+    document.addEventListener('click', e => {
+      if (!document.getElementById('search-row').contains(e.target) &&
+          !document.getElementById('history-dropdown').contains(e.target)) {
+        document.getElementById('history-dropdown').classList.remove('open');
+      }
+    });
+
+    document.getElementById('url-input').addEventListener('focus', () => {
+      renderHistory(document.getElementById('url-input').value);
+    });
+    document.getElementById('url-input').addEventListener('input', e => {
+      renderHistory(e.target.value);
+    });
+    document.getElementById('url-input').addEventListener('keydown', e => {
+      if (e.key === 'Enter') {
+        document.getElementById('history-dropdown').classList.remove('open');
+        readArticle();
+      }
+      if (e.key === 'Escape') document.getElementById('history-dropdown').classList.remove('open');
+    });
+
+    // ── font size control ──
+    function setFontSize(val) {
+      document.documentElement.style.setProperty('--font-size', val + 'px');
+      document.getElementById('font-size-val').textContent = val;
+    }
+
+    // ── copy text ──
+    function copyText() {
+      const body = document.getElementById('article-body');
+      if (!body) return;
+      const text = Array.from(body.querySelectorAll('p')).map(p => p.textContent).join('\n\n');
+      navigator.clipboard.writeText(text).then(() => {
+        const btn = document.getElementById('btn-copy');
+        btn.textContent = '✓ Copiado!';
+        btn.classList.add('copied');
+        setTimeout(() => {
+          btn.textContent = '⎘ Copiar texto';
+          btn.classList.remove('copied');
+        }, 2000);
+      });
+    }
+
+    // ── main read function ──
     async function readArticle() {
       const url = document.getElementById('url-input').value.trim();
       if (!url) return;
@@ -345,18 +624,20 @@
       const statusTxt = document.getElementById('status-txt');
       const errorBox = document.getElementById('error-box');
       const article = document.getElementById('article');
+      const skeleton = document.getElementById('skeleton');
 
       btn.disabled = true;
       loader.style.display = 'flex';
+      skeleton.style.display = 'block';
       errorBox.style.display = 'none';
       article.style.display = 'none';
       document.getElementById('btn-pdf').style.display = 'none';
 
       const msgs = [
-        'Accessing source…',
-        'Trying alternative methods…',
-        'Extracting content…',
-        'Almost there…',
+        'Acessando a fonte…',
+        'Tentando métodos alternativos…',
+        'Extraindo conteúdo…',
+        'Quase lá…',
       ];
       let mi = 0;
       statusTxt.textContent = msgs[mi];
@@ -366,7 +647,7 @@
       }, 2500);
 
       try {
-        const res = await fetch('http://localhost:5000/read', {
+        const res = await fetch('/read', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ url }),
@@ -375,6 +656,7 @@
         const data = await res.json();
         clearInterval(ticker);
         loader.style.display = 'none';
+        skeleton.style.display = 'none';
         btn.disabled = false;
 
         if (data.error) {
@@ -384,7 +666,10 @@
           return;
         }
 
-        // fill article
+        // Save to history
+        saveToHistory(url);
+
+        // Fill article
         document.getElementById('article-method').textContent = 'via ' + data.method;
         document.getElementById('article-title').textContent = data.title;
 
@@ -415,21 +700,16 @@
       } catch (err) {
         clearInterval(ticker);
         loader.style.display = 'none';
+        skeleton.style.display = 'none';
         btn.disabled = false;
         document.getElementById('error-msg').textContent =
-          'Server did not respond. Make sure server.py is running.';
+          'O servidor não respondeu. Certifique-se de que o server.py está em execução.';
         errorBox.style.display = 'block';
         statusTxt.textContent = '';
       }
     }
 
-    document.getElementById('url-input').addEventListener('keydown', e => {
-      if (e.key === 'Enter') readArticle();
-    });
-
-    function downloadPDF() {
-      window.print();
-    }
+    function downloadPDF() { window.print(); }
   </script>
 </body>
 </html>

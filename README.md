@@ -5,19 +5,22 @@ Paste a link → get the full article, ad-free, ready to read or save as PDF.
 
 ![oLeitor screenshot](cover_fig.jpeg)
 
-## How it works
+## Features
 
 The front-end (`index.html`) sends the article URL to a local Flask server (`server.py`), which tries several extraction strategies in sequence until it gets usable content:
 
 | # | Method | Description |
 |---|--------|-------------|
-| 1 | **Direct access** | Fetches the page directly with a browser-like User-Agent |
+| 1 | **Direct access** | Fetches the page directly with a robust browser-like User-Agent |
 | 2 | **newspaper3k** | Uses the `newspaper3k` library for smart article parsing |
 | 3 | **Wayback Machine** | Falls back to the most recent Internet Archive snapshot |
-| 4 | **Google Cache** | Tries the Google cache copy of the page |
+| 4 | **archive.ph** | Uses the archive mirror (replaced discontinued Google Cache) |
 | 5 | **12ft.io** | Uses the 12ft.io proxy as a last resort |
 
-Extracted text is rendered in a clean, typographic layout. A **Download PDF** button triggers the browser's print dialog for offline saving.
+- **Distraction-free Reading**: Extracted text is rendered in a clean, typographic layout.
+- **PDF Export**: A **Download PDF** button triggers the browser's print dialog for offline saving.
+- **Dark Mode**: UI automatically shifts to a dark theme depending on your OS preferences.
+- **Local Network Support**: Run Flask on `0.0.0.0` and read from any device on the same Wi-Fi flawlessly.
 
 ## Requirements
 
@@ -32,11 +35,11 @@ git clone https://github.com/your-username/oLeitor.git
 cd oLeitor
 
 # 2. (Optional) Create a virtual environment
-python -m venv venv
+python -m venv .venv
 # Windows
-venv\Scripts\activate
+.venv\Scripts\activate
 # macOS/Linux
-source venv/bin/activate
+source .venv/bin/activate
 
 # 3. Install dependencies
 pip install -r requirements.txt
