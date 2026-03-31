@@ -59,9 +59,7 @@ HEADERS = {
     ),
     "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
     "Accept-Language": "pt-BR,pt;q=0.9,en-US;q=0.8,en;q=0.7",
-    "Accept-Encoding": "gzip, deflate, br",
-    "Referer": "https://www.google.com/",
-    "DNT": "1",
+    "Referer": "https://www.google.com/"
 }
 
 SESSION = req.Session()
@@ -78,7 +76,20 @@ def _get(url):
         r.raise_for_status()
         r.encoding = r.apparent_encoding
         return r
-    except Exception:
+    except req.exceptions.SSLError:
+        try:
+            # Fallback for strict SSL interception networks
+            import urllib3
+            urllib3.disable_warnings()
+            r = SESSION.get(url, timeout=TIMEOUT, allow_redirects=True, verify=False)
+            r.raise_for_status()
+            r.encoding = r.apparent_encoding
+            return r
+        except Exception as e:
+            print(f"[_get fallback error] {e}")
+            return None
+    except Exception as e:
+        print(f"[_get error] {url}: {e}")
         return None
 
 
@@ -92,7 +103,7 @@ def extract_text(html, url=""):
 
     if HAS_TRAFILATURA:
         t = trafilatura.extract(html, include_comments=False, include_tables=False)
-        if t and len(t) > 200:
+        if t and len(t) > 40:
             return t
 
     if HAS_BS4:
@@ -103,9 +114,8 @@ def extract_text(html, url=""):
             "[class*='overlay'],[class*='modal'],[class*='signup']"
         ):
             tag.decompose()
-        paragraphs = [p.get_text(" ", strip=True) for p in soup.find_all("p")]
-        text = "\n\n".join(p for p in paragraphs if len(p) > 40)
-        if text and len(text) > 200:
+        text = "\n\n".join(p for p in paragraphs if len(p) > 20)
+        if text and len(text) > 40:
             return text
 
     return None
@@ -163,12 +173,30 @@ def method_newspaper(url):
         art = Article(url, config=config)
         art.download()
         art.parse()
-        if art.text and len(art.text) > 200:
+        if art.text and len(art.text) > 40:
             return art.title or None, art.text, art.top_image or None
-    except Exception:
-        pass
+    except Exception as e:
+        print(f"[newspaper error] {url}: {e}")
     return None, None, None
 
+def method_googlebot(url):
+    try:
+        import urllib3
+        urllib3.disable_warnings()
+        headers = {
+            "User-Agent": "Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)",
+            "X-Forwarded-For": "66.249.66.1"
+        }
+        r = req.get(url, headers=headers, timeout=TIMEOUT, allow_redirects=True, verify=False)
+        r.raise_for_status()
+        r.encoding = r.apparent_encoding
+        title = get_page_title(r.text)
+        text = extract_text(r.text, url)
+        img = get_page_image(r.text)
+        return title, text, img
+    except Exception as e:
+        print(f"[googlebot error] {url}: {e}")
+        return None, None, None
 
 def method_wayback(url):
     api = f"https://archive.org/wayback/available?url={urllib.parse.quote(url)}"
@@ -203,6 +231,7 @@ def method_12ft(url):
 
 METHODS = [
     ("Direct access",  method_direct),
+    ("Googlebot",      method_googlebot),
     ("newspaper3k",    method_newspaper),
     ("Wayback Machine", method_wayback),
     ("archive.ph",     method_archiveph),
@@ -230,7 +259,7 @@ def read():
 
     for name, method_fn in METHODS:
         title, text, image = method_fn(url)
-        if text and len(text) > 200:
+        if text and len(text) > 40:
             result = {
                 "title": title or "Untitled",
                 "text": text,
